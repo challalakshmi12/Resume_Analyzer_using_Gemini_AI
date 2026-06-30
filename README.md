@@ -102,6 +102,6 @@ Open a Pull Request.
 This project is licensed under the MIT License.
 
 👤 Author
-GitHub: https://github.com/YOUR_USERNAME
+GitHub: https://github.com/challalakshmi12
 
 If you found this project helpful, consider giving it a ⭐.
