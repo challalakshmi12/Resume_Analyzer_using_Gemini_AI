@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Analyzer</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#2563eb,#7c3aed);
+min-height:100vh;
+padding:40px;
+transition:.4s;
+}
+
+.container{
+
+max-width:950px;
+margin:auto;
+background:white;
+border-radius:18px;
+padding:35px;
+box-shadow:0 15px 40px rgba(0,0,0,.2);
+
+}
+
+.header{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:25px;
+
+}
+
+.header h1{
+
+color:#2563eb;
+
+}
+
+.themeBtn{
+
+background:#111827;
+color:white;
+padding:10px 18px;
+border-radius:8px;
+cursor:pointer;
+border:none;
+
+}
+
+label{
+
+display:block;
+margin-top:18px;
+margin-bottom:8px;
+font-weight:bold;
+
+}
+
+input,
+textarea{
+
+width:100%;
+padding:14px;
+border:1px solid #ccc;
+border-radius:8px;
+font-size:15px;
+outline:none;
+
+}
+
+textarea{
+
+resize:vertical;
+
+}
+
+input:focus,
+textarea:focus{
+
+border-color:#2563eb;
+
+}
+
+#analyzeBtn{
+
+width:100%;
+padding:15px;
+margin-top:25px;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:white;
+font-size:17px;
+cursor:pointer;
+transition:.3s;
+
+}
+
+#analyzeBtn:hover{
+
+background:#1d4ed8;
+
+}
+
+.spinner{
+
+display:none;
+margin:30px auto;
+width:60px;
+height:60px;
+border:6px solid #ddd;
+border-top:6px solid #2563eb;
+border-radius:50%;
+animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+100%{
+
+transform:rotate(360deg);
+
+}
+
+}
+
+.resultCard{
+
+margin-top:25px;
+padding:20px;
+background:#eef4ff;
+border-radius:12px;
+white-space:pre-wrap;
+line-height:1.8;
+font-size:15px;
+
+}
+
+.download{
+
+display:none;
+margin-top:20px;
+background:#16a34a;
+color:white;
+padding:14px;
+width:100%;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:16px;
+
+}
+
+.download:hover{
+
+background:#15803d;
+
+}
+
+footer{
+
+margin-top:25px;
+text-align:center;
+color:gray;
+font-size:14px;
+
+}
+
+.dark{
+
+background:#111827;
+
+}
+
+.dark .container{
+
+background:#1f2937;
+color:white;
+
+}
+
+.dark input,
+.dark textarea{
+
+background:#374151;
+color:white;
+border:none;
+
+}
+
+.dark .resultCard{
+
+background:#374151;
+
+}
+
+.dark .themeBtn{
+
+background:white;
+color:black;
+
+}
+
+@media(max-width:768px){
+
+.container{
+
+padding:20px;
+
+}
+
+.header{
+
+flex-direction:column;
+gap:15px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+<h1>🤖 AI Resume Analyzer</h1>
+
+<button class="themeBtn" onclick="toggleTheme()">
+
+🌙 Dark / Light
+
+</button>
+
+</div>
+
+<label>Target Job Role</label>
+
+<input
+type="text"
+id="roleInput"
+placeholder="Example: Software Engineer">
+
+<label>Upload Resume (Optional)</label>
+
+<input
+type="file"
+accept=".pdf,.doc,.docx">
+
+<label>Paste Resume Content</label>
+
+<textarea
+id="resumeInput"
+rows="12"
+placeholder="Paste your resume here..."></textarea>
+
+<button
+id="analyzeBtn"
+onclick="analyzeResume()">
+
+Analyze Resume
+
+</button>
+
+<div
+class="spinner"
+id="loader"></div>
+
+<div
+id="output"
+class="resultCard">
+
+Your AI analysis will appear here...
+
+</div>
+
+<button
+class="download"
+id="downloadBtn"
+onclick="downloadReport()">
+
+📥 Download Report
+
+</button>
+
+<footer>
+
+Powered by Gemini AI
+
+</footer>
+
+</div>
+
+<script>
+
+function toggleTheme(){
+
+document.body.classList.toggle("dark");
+
+}
+
+async function analyzeResume(){
+
+const role=document.getElementById("roleInput").value.trim();
+
+const resume=document.getElementById("resumeInput").value.trim();
+
+if(role==="" || resume===""){
+
+alert("Please enter both Job Role and Resume.");
+
+return;
+
+}
+
+document.getElementById("loader").style.display="block";
+
+document.getElementById("output").innerHTML="";
+
+document.getElementById("downloadBtn").style.display="none";
+
+try{
+
+const response=await fetch("http://localhost:8000/analyze",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+resume:resume,
+
+role:role
+
+})
+
+});
+
+if(!response.ok){
+
+throw new Error("Server Error");
+
+}
+
+const data=await response.json();
+
+document.getElementById("loader").style.display="none";
+
+document.getElementById("output").innerText=data.result;
+
+document.getElementById("downloadBtn").style.display="block";
+
+}
+
+catch(error){
+
+document.getElementById("loader").style.display="none";
+
+document.getElementById("output").innerHTML="❌ Error connecting to Flask server. Please make sure resume_api.py is running.";
+
+}
+
+}
+
+function downloadReport(){
+
+const text=document.getElementById("output").innerText;
+
+const blob=new Blob([text],{type:"text/plain"});
+
+const link=document.createElement("a");
+
+link.href=URL.createObjectURL(blob);
+
+link.download="Resume_Analysis_Report.txt";
+
+link.click();
+
+}
+
+</script>
+
+</body>
+</html>
